@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace AssemblyResolverDll {
     public class AsseblyResolver {
-        public void Attach() {
+        public static void Attach(string _folderName) {
+            folderName = _folderName;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
         }
-
-        public string FindDllFolder(string dllFolderName) {
-
+       static string folderName;
+        public static string FindDllFolder(string dllFolderName) {
             var currentPath = Directory.GetCurrentDirectory();
             while(currentPath != null) {
                 var candidateName = "";
@@ -31,7 +31,7 @@ namespace AssemblyResolverDll {
             return null;
         }
 
-        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
             // Ignore missing resources
             if(args.Name.Contains(".resources"))
                 return null;
@@ -41,9 +41,10 @@ namespace AssemblyResolverDll {
             if(assembly != null)
                 return assembly;
 
-            var dllFolderName = FindDllFolder("Dll1234");
-            if(dllFolderName == null)
-                return null;
+            var dllFolderName = FindDllFolder(folderName);
+            if(dllFolderName == null){
+                throw new Exception("dll folder is not found");
+            }
 
             // Try to load by filename - split out the filename of the full assembly name
             // and append the base path of the original assembly (ie. look in the same dir)
